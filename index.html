@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InstaScan - Instagram Fake Account Detector</title>
+  <meta name="description"
+    content="Detect fake Instagram accounts with AI-powered analysis. Get instant, detailed reports on any Instagram profile." />
+  <meta name="author" content="InstaScan" />
+  <meta name="keywords"
+    content="instagram, fake account detector, instagram analysis, social media security, account verification" />
+  <meta property="og:title" content="InstaScan - Instagram Fake Account Detector" />
+  <meta property="og:description"
+    content="Detect fake Instagram accounts with AI-powered analysis. Get instant, detailed reports on any Instagram profile." />
+  <meta property="og:type" content="website" />
+
+  <style>
+    /* --- original CSS (kept) --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: hsl(220, 30%, 98%);
+      color: hsl(240, 10%, 10%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 4rem 0;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, hsl(270, 80%, 60%), hsl(350, 85%, 65%));
+      opacity: 0.1;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, hsl(270, 80%, 60%, 0.1), transparent 50%);
+    }
+
+    .hero-content {
+      position: relative;
+      text-align: center;
+      max-width: 1000px;
+      margin: 0 auto;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .logo-container {
+      margin-bottom: 2rem;
+    }
+
+    .logo-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .logo-glow {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, hsl(270, 80%, 60%), hsl(350, 85%, 65%));
+      filter: blur(2rem);
+      opacity: 0.3;
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    .logo {
+      position: relative;
+      background: linear-gradient(135deg, hsl(270, 80%, 60%), hsl(350, 85%, 65%));
+      padding: 1rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px -8px hsl(270, 80%, 60%, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 3rem;
+      height: 3rem;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, hsl(270, 80%, 60%), hsl(350, 85%, 65%));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      color: hsl(220, 10%, 50%);
+      margin-bottom: 2rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Input Card */
+    .input-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px -2px hsl(220, 20%, 20%, 0.1);
+      border: 2px solid hsl(220, 20%, 90%);
+      margin-bottom: 2rem;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ensure above decorative layers */
+    .input {
+      flex: 1;
+      min-width: 250px;
+      padding: 0.875rem 1rem;
+      font-size: 1.125rem;
+      border: 2px solid hsl(220, 20%, 90%);
+      border-radius: 0.75rem;
+      outline: none;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 3;
+    }
+
+    .input:focus {
+      border-color: hsl(270, 80%, 60%);
+      box-shadow: 0 0 0 3px hsl(270, 80%, 60%, 0.1);
+    }
+
+    .btn {
+      padding: 0.875rem 2rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, hsl(270, 80%, 60%), hsl(350, 85%, 65%));
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      box-shadow: 0 8px 32px -8px hsl(270, 80%, 60%, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .security-note {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: hsl(220, 10%, 50%);
+    }
+
+    /* Features Grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      border: 2px solid hsl(220, 20%, 90%);
+      text-align: center;
+      transition: box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 8px 32px -8px hsl(270, 80%, 60%, 0.3);
+    }
+
+    .feature-icon {
+      background: linear-gradient(135deg, hsl(270, 80%, 60%), hsl(350, 85%, 65%));
+      padding: 0.75rem;
+      border-radius: 1rem;
+      display: inline-flex;
+      margin-bottom: 1rem;
+    }
+
+    .feature-icon svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Results Section */
+    .results {
+      padding: 3rem 0;
+    }
+
+    .result-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px -2px hsl(220, 20%, 20%, 0.1);
+      border: 2px solid hsl(220, 20%, 90%);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .result-badge.real {
+      background: hsl(142, 70%, 45%, 0.1);
+      color: hsl(142, 70%, 35%);
+      border: 2px solid hsl(142, 70%, 45%);
+    }
+
+    .result-badge.fake {
+      background: hsl(0, 85%, 60%, 0.1);
+      color: hsl(0, 85%, 50%);
+      border: 2px solid hsl(0, 85%, 60%);
+    }
+
+    .profile-content {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .profile-image {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 4px solid white;
+      box-shadow: 0 4px 20px -2px hsl(220, 20%, 20%, 0.15);
+      object-fit: cover;
+    }
+
+    .profile-details {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .profile-username {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    .badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge.verified {
+      background: hsl(270, 80%, 60%, 0.1);
+      color: hsl(270, 80%, 50%);
+    }
+
+    .badge.private {
+      background: hsl(220, 20%, 95%);
+      color: hsl(220, 10%, 50%);
+    }
+
+    .profile-name {
+      color: hsl(220, 10%, 50%);
+      font-size: 1.125rem;
+    }
+
+    .profile-bio {
+      color: hsl(240, 10%, 10%);
+      line-height: 1.6;
+    }
+
+    .profile-link {
+      color: hsl(270, 80%, 60%);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .profile-link:hover {
+      text-decoration: underline;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .stat-card {
+      background: hsl(220, 30%, 98%);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: hsl(270, 80%, 60%);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: hsl(220, 10%, 50%);
+      margin-top: 0.25rem;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block;
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes glow {
+
+      0%,
+      100% {
+        opacity: 0.3
+      }
+
+      50% {
+        opacity: 0.5
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width:768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .subtitle {
+        font-size: 1.125rem;
+      }
+
+      .input-group {
+        flex-direction: column;
+      }
+
+      .input {
+        min-width: 100%;
+      }
+
+      .profile-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+        justify-items: center;
+      }
+
+      .profile-header {
+        justify-content: center;
+      }
+    }
+
+    /* === Fix overlay blocking clicks: ensure decorative layers don't capture pointer events === */
+    .hero::before,
+    .hero::after,
+    .logo-glow {
+      pointer-events: none;
+    }
+
+
+
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.5rem;
+    }
+
+    .feature-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: white;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 0.6rem;
+    }
+
+    .feature-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 0.3rem;
+    }
+
+    .feature-card p {
+      color: #444;
+      font-size: 0.95rem;
+      word-wrap: break-word;
+    }
+
+    .span-2 {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Hero Section -->
+  <div class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <!-- Logo -->
+        <div class="logo-container">
+          <div class="logo-wrapper">
+            <div class="logo-glow" aria-hidden="true"></div>
+            <div class="logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <h1>InstaScan</h1>
+        <p class="subtitle">Detect fake Instagram accounts with advanced analysis</p>
+
+        <!-- Input Card -->
+        <div class="input-card">
+          <div class="input-group">
+            <input type="text" id="urlInput" class="input" placeholder="Paste Instagram profile URL..."
+              autocomplete="off" />
+            <button id="checkBtn" class="btn" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              Check Profile
+            </button>
+          </div>
+          <div class="security-note" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>100% secure and private analysis</span>
+          </div>
+        </div>
+        <!-- Results Section -->
+        <div id="resultsSection" class="results hidden">
+          <div class="container">
+            <div id="resultsContent" class="result-card"></div>
+          </div>
+        </div>
+        <!-- Features -->
+        <div class="features" aria-hidden="true">
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg></div>
+            <h3>AI-Powered Detection</h3>
+            <p>Advanced algorithms analyze account patterns</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <h3>Instant Results</h3>
+            <p>Get detailed analysis in seconds</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg></div>
+            <h3>Comprehensive Report</h3>
+            <p>View all account metrics and indicators</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    /* Attach listeners after DOM is parsed (script is at page end) */
+    const urlInput = document.getElementById('urlInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsContent = document.getElementById('resultsContent');
+
+    // Enter key triggers detection
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        detectFake();
+      }
+    });
+
+    // Button click triggers detection
+    checkBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      detectFake();
+    });
+
+    async function detectFake() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        alert('Please enter an Instagram profile URL');
+        return;
+      }
+      if (!url.includes('instagram.com')) {
+        alert('Please enter a valid Instagram URL');
+        return;
+      }
+
+      // Loading state
+      checkBtn.disabled = true;
+      const prevHTML = checkBtn.innerHTML;
+      checkBtn.innerHTML = `<span class="spinner" aria-hidden="true"></span> Analyzing...`;
+      resultsSection.classList.add('hidden');
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+        if (data.error) {
+          resultsContent.innerHTML = `<p style="color: #b91c1c; text-align:center;">❌ ${data.error}</p>`;
+          resultsSection.classList.remove('hidden');
+          return;
+        }
+        displayResults(data);
+      } catch (err) {
+        resultsContent.innerHTML = `<p style="color: #b91c1c; text-align:center;">⚠️ Failed to connect to backend. Check your server.</p>`;
+        resultsSection.classList.remove('hidden');
+        console.error(err);
+      } finally {
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = prevHTML;
+      }
+    }
+
+    function displayResults(data) {
+      const p = data.profile || {};
+      const isFake = data.result && data.result.toLowerCase().includes('fake');
+
+      // Top badge + profile header
+      resultsContent.innerHTML = `
+    <div style="text-align:center; margin-bottom:1rem;">
+      <span class="result-badge ${isFake ? 'fake' : 'real'}">
+        ${isFake ? '⚠️ Fake Account' : '✓ Real Account'}
+      </span>
+    </div>
+
+    <div class="profile-content" style="margin-bottom:1rem;">
+      <img src="${p.profile_pic_url || 'https://via.placeholder.com/150'}" alt="Profile Picture" class="profile-image" onerror="this.src='https://via.placeholder.com/150?text=No+Image'"/>
+      <div class="profile-details" style="padding-top:6px;">
+        <div class="profile-header">
+          <h2 class="profile-username">${p.username || 'Unknown'}</h2>
+          ${p.is_verified ? '<span class="badge verified">✓ Verified</span>' : ''}
+          ${p.is_private ? '<span class="badge private">🔒 Private</span>' : ''}
+        </div>
+        ${p.full_name ? `<p class="profile-name">${p.full_name}</p>` : ''}
+        ${p.biography ? `<p class="profile-bio">${truncate(p.biography, 320)}</p>` : ''}
+        ${p.external_url ? `<a href="${p.external_url}" target="_blank" class="profile-link">🔗 ${p.external_url}</a>` : ''}
+        
+      </div>
+    </div>
+    
+    <div class="results-grid" aria-live="polite">
+  <!-- Username -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zM4 20c0-4 8-6 8-6s8 2 8 6v2H4v-2z"></path>
+      </svg>
+    </div>
+    <h3>Username</h3>
+    <p>${p.username || 'N/A'}</p>
+  </div>
+
+  <!-- Full Name -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zM4 20c0-4 8-6 8-6s8 2 8 6v2H4v-2z"></path>
+      </svg>
+    </div>
+    <h3>Full Name</h3>
+    <p>${p.full_name || 'N/A'}</p>
+  </div>
+
+  <!-- Bio -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 4h16v16H4z"></path>
+        <line x1="8" y1="10" x2="16" y2="10"></line>
+        <line x1="8" y1="14" x2="13" y2="14"></line>
+      </svg>
+    </div>
+    <h3>Biography</h3>
+    <p>${p.biography ? escapeHtml(p.biography) : 'N/A'}</p>
+  </div>
+
+  <!-- External URL -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M10 13a5 5 0 0 1 7 0l1 1a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7 0"></path>
+        <path d="M14 11a5 5 0 0 0-7 0L6 12a5 5 0 0 0 0 7l1 1a5 5 0 0 0 7 0"></path>
+      </svg>
+    </div>
+    <h3>External Link</h3>
+    <p>${p.external_url ? `<a href="${p.external_url}" target="_blank" rel="noopener">${p.external_url}</a>` : 'None'}</p>
+  </div>
+
+  <!-- Private -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 17a2 2 0 0 0 2-2V9a2 2 0 0 0-4 0v6a2 2 0 0 0 2 2z"></path>
+        <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+      </svg>
+    </div>
+    <h3>Private Account</h3>
+    <p>${p.is_private ? '✅ Yes' : '❌ No'}</p>
+  </div>
+
+  <!-- Verified -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <h3>Verified</h3>
+    <p>${p.is_verified ? '✅ Yes' : '❌ No'}</p>
+  </div>
+
+  <!-- Posts -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <line x1="3" y1="9" x2="21" y2="9"></line>
+        <line x1="9" y1="21" x2="9" y2="9"></line>
+      </svg>
+    </div>
+    <h3>Posts</h3>
+    <p>${formatNumber(p['#posts'])}</p>
+  </div>
+
+  <!-- Followers -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="8" cy="8" r="3"></circle>
+        <circle cx="16" cy="8" r="3"></circle>
+        <path d="M2 21v-2a4 4 0 0 1 4-4h4"></path>
+        <path d="M14 15h4a4 4 0 0 1 4 4v2"></path>
+      </svg>
+    </div>
+    <h3>Followers</h3>
+    <p>${formatNumber(p['#followers'])}</p>
+  </div>
+
+  <!-- Following -->
+  <div class="feature-card">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"></path>
+        <path d="M2 22a10 10 0 0 1 20 0"></path>
+      </svg>
+    </div>
+    <h3>Following</h3>
+    <p>${formatNumber(p['#follows'])}</p>
+  </div>
+</div>
+
+
+
+
+  `;
+
+      // Reveal and smooth-scroll
+      resultsSection.classList.remove('hidden');
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* small helper: truncate long bios */
+    function truncate(str, n) {
+      if (!str) return '';
+      return str.length > n ? escapeHtml(str.slice(0, n - 1)) + '…' : escapeHtml(str);
+    }
+
+    /* escape HTML to avoid injected markup from scraped bios */
+    function escapeHtml(unsafe) {
+      if (!unsafe && unsafe !== 0) return '';
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    function formatNumber(num) {
+      if (!num && num !== 0) return '—';
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return String(num);
+    }
+  </script>
+</body>
+
+</html>
