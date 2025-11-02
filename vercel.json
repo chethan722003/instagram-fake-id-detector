@@ -1,11 +1,22 @@
 {
   "builds": [
-    { "src": "api/predict.py", "use": "@vercel/python" },
-    { "src": "frontend/**", "use": "@vercel/static" }
+    {
+      "src": "api/predict.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**/*",
+      "use": "@vercel/static"
+    }
   ],
   "routes": [
-    { "src": "/predict", "dest": "/api/predict.py" },
-    { "src": "/(.*)", "dest": "/frontend/index.html" }
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/predict.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
   ]
 }
-
