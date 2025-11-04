@@ -1,121 +1,184 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>InstaScan — Simple</title>
+  <meta charset="UTF-8">
+  <title>InstaScan - Manual Instagram Fake Account Detector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root{
-      --bg:#f6f8fb; --card:#fff; --accent:#6b21a8; --danger:#b91c1c; --muted:#6b7280;
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
     }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
-    body{display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
-    .card{width:100%;max-width:540px;background:var(--card);padding:28px;border-radius:12px;box-shadow:0 6px 30px rgba(11,15,30,0.08);text-align:center;}
-    h1{margin:0 0 10px;font-size:20px;color:var(--accent)}
-    p.lead{margin:0 0 18px;color:var(--muted);font-size:14px}
-    input[type="text"]{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #e6e9ef;font-size:15px;outline:none;}
-    .row{display:flex;gap:8px;margin-top:12px;}
-    button{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;}
-    button[disabled]{opacity:.6;cursor:not-allowed}
-    .result{margin-top:18px;font-size:18px;font-weight:700;min-height:36px;display:flex;align-items:center;justify-content:center}
-    .result.real{color: #059669} /* green */
-    .result.fake{color: var(--danger)}
-    .error{color:var(--danger);font-weight:600}
-    .hint{margin-top:10px;color:var(--muted);font-size:13px}
-    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;margin-right:8px}
-    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input, textarea {
+      padding: 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+    }
+
+    label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .checkboxes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #profilePreview {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    #profilePreview img {
+      max-width: 120px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    #result {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    .real {
+      color: green;
+    }
+
+    .fake {
+      color: red;
+    }
+
   </style>
 </head>
 <body>
-  <div class="card" role="main" aria-labelledby="title">
-    <h1 id="title">InstaScan — Quick Check</h1>
-    <p class="lead">Paste an Instagram profile URL and click Predict — shows only Real or Fake.</p>
+  <div class="container">
+    <h2>InstaScan - Manual Entry</h2>
 
-    <label for="url" class="sr-only">Instagram URL</label>
-    <input id="url" type="text" placeholder="https://www.instagram.com/username" autocomplete="off" />
+    <form id="manualForm">
+      <label>Username:</label>
+      <input type="text" name="username" required>
 
-    <div class="row">
-      <button id="predictBtn" type="button">Predict</button>
-      <button id="clearBtn" type="button" style="background:#e6e9ef;color:#111">Clear</button>
-    </div>
+      <label>Full Name:</label>
+      <input type="text" name="full_name" required>
 
-    <div id="result" class="result" aria-live="polite"></div>
-    <div id="hint" class="hint">Only outputs "Real Account" or "Fake Account".</div>
+      <label>Biography:</label>
+      <textarea name="biography" rows="2" placeholder="Short bio..."></textarea>
+
+      <label>External URL:</label>
+      <input type="text" name="external_url" placeholder="https://example.com">
+
+      <label>Profile Picture URL:</label>
+      <input type="text" name="profile_pic_url" id="profilePicInput" placeholder="Paste image URL">
+      <div id="profilePreview">
+        <img id="profileImg" src="" alt="Profile Picture Preview">
+      </div>
+
+      <div class="checkboxes">
+        <label><input type="checkbox" name="is_private"> Private</label>
+        <label><input type="checkbox" name="is_verified"> Verified</label>
+      </div>
+
+      <label>Number of Posts:</label>
+      <input type="number" name="posts" required>
+
+      <label>Number of Followers:</label>
+      <input type="number" name="followers" required>
+
+      <label>Number of Following:</label>
+      <input type="number" name="follows" required>
+
+      <button type="submit">Predict</button>
+    </form>
+
+    <div id="result"></div>
   </div>
 
   <script>
-    (function(){
-      const urlEl = document.getElementById('url');
-      const btn = document.getElementById('predictBtn');
-      const clearBtn = document.getElementById('clearBtn');
-      const resultEl = document.getElementById('result');
+    // Preview profile picture if a URL is entered
+    const profileInput = document.getElementById("profilePicInput");
+    const previewDiv = document.getElementById("profilePreview");
+    const previewImg = document.getElementById("profileImg");
 
-      // Enter triggers
-      urlEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
-      btn.addEventListener('click', run);
-      clearBtn.addEventListener('click', () => {
-        urlEl.value = ''; resultEl.textContent = ''; resultEl.className = 'result'; urlEl.focus();
-      });
+    profileInput.addEventListener("input", () => {
+      const url = profileInput.value.trim();
+      if (url) {
+        previewImg.src = url;
+        previewDiv.style.display = "block";
+      } else {
+        previewDiv.style.display = "none";
+      }
+    });
 
-      async function run(){
-        const url = urlEl.value.trim();
-        resultEl.className = 'result';
-        resultEl.textContent = '';
+    // Handle form submission
+    document.getElementById("manualForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
 
-        if (!url) { showError('Please enter an Instagram profile URL'); return; }
-        if (!url.includes('instagram.com')) { showError('Please enter a valid Instagram URL'); return; }
+      try {
+        const response = await fetch("/predict_manual", {
+          method: "POST",
+          body: formData
+        });
 
-        // set loading
-        btn.disabled = true;
-        const original = btn.textContent;
-        btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>Analyzing...';
+        const data = await response.json();
+        const resultDiv = document.getElementById("result");
 
-        try {
-          const res = await fetch('/api/predict', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url })
-          });
-
-          if (!res.ok) {
-            showError('Server error. Try again.');
-            return;
-          }
-
-          const data = await res.json();
-
-          if (data && typeof data.result === 'string') {
-            // Normalize decision text; keep it simple
-            const txt = data.result.toLowerCase();
-            if (txt.includes('fake') || txt.includes('fraud') || txt.includes('bot') || txt.includes('suspicious')) {
-              showDecision('Fake Account', 'fake');
-            } else {
-              showDecision('Real Account', 'real');
-            }
-          } else if (data && data.error) {
-            showError(data.error);
-          } else {
-            showError('Unexpected response from server.');
-          }
-        } catch (err) {
-          console.error(err);
-          showError('Could not connect to backend.');
-        } finally {
-          btn.disabled = false;
-          btn.innerHTML = original;
+        if (data.result) {
+          const cls = data.result === "Fake Account" ? "fake" : "real";
+          resultDiv.innerHTML = `Prediction: <span class="${cls}">${data.result}</span>`;
+        } else {
+          resultDiv.textContent = data.error || "Prediction failed.";
         }
+      } catch (err) {
+        document.getElementById("result").textContent = "Server error: " + err.message;
       }
-
-      function showDecision(text, cls) {
-        resultEl.className = 'result ' + cls;
-        resultEl.textContent = (cls === 'real' ? '✓ ' : '⚠️ ') + text;
-      }
-
-      function showError(msg) {
-        resultEl.className = 'result error';
-        resultEl.textContent = '⚠️ ' + msg;
-      }
-    })();
+    });
   </script>
 </body>
 </html>
