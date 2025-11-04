@@ -1,93 +1,79 @@
-import os
+from flask import Flask, request, jsonify, render_template
 import pandas as pd
-import base64
-import requests
-from flask import Flask, request, jsonify, send_from_directory
-import instaloader
-from urllib.parse import urlparse
 import joblib
+import os
 
-app = Flask(__name__)
+# Point Flask to look for templates in the frontend folder
+app = Flask(__name__, template_folder='../frontend')
 
-# Model path (compatible with Vercel and local)
+# Load trained model
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'model', 'rf_model.pkl')
 model = joblib.load(MODEL_PATH)
 
-def extract_username(url):
-    """Extract the Instagram username from a profile URL."""
-    return urlparse(url).path.strip('/').split('/')[0]
 
-@app.route('/api/predict', methods=['POST'])
-def predict():
+def to_int_or_default(val, default=0):
     try:
-        data = request.json
-        url = data.get('url')
-        if not url:
-            return jsonify({'error': 'No URL provided'}), 400
+        return int(val)
+    except Exception:
+        return default
 
-        username = extract_username(url)
-        if not username:
-            return jsonify({'error': 'Invalid Instagram URL'}), 400
 
-        # Load profile
-        L = instaloader.Instaloader()
-        profile = instaloader.Profile.from_username(L.context, username)
+@app.route('/')
+def index():
+    # Serve manual entry page
+    return render_template('index.html')
 
-        # Extract features
+
+@app.route('/predict_manual', methods=['POST'])
+def predict_manual():
+    """
+    Manual form-based fake account prediction
+    """
+    try:
+        username = (request.form.get('username') or "").strip()
+        full_name = (request.form.get('full_name') or "").strip()
+        biography = request.form.get('biography') or ""
+        external_url = request.form.get('external_url') or ""
+        is_private = request.form.get('is_private') == 'on'
+        is_verified = request.form.get('is_verified') == 'on'
+        profile_pic_url = request.form.get('profile_pic_url') or ""
+        posts = to_int_or_default(request.form.get('posts'), 0)
+        followers = to_int_or_default(request.form.get('followers'), 0)
+        follows = to_int_or_default(request.form.get('follows'), 0)
+
+        username_len = len(username) or 1
+        fullname_len = len(full_name) or 1
+
         features = {
-            'profile pic': 1 if profile.profile_pic_url else 0,
-            'nums/length username': sum(c.isdigit() for c in profile.username) / len(profile.username),
-            'fullname words': len(profile.full_name.split()),
-            'nums/length fullname': sum(c.isdigit() for c in profile.full_name) / (len(profile.full_name) or 1),
-            'name==username': int(profile.full_name.lower() == profile.username.lower()),
-            'description length': len(profile.biography),
-            'external URL': 1 if profile.external_url else 0,
-            'private': int(profile.is_private),
-            '#posts': profile.mediacount,
-            '#followers': profile.followers,
-            '#follows': profile.followees
+            'profile pic': 1 if profile_pic_url else 0,
+            'nums/length username': sum(1 for c in username if c.isdigit()) / username_len,
+            'fullname words': len(full_name.split()) if full_name else 0,
+            'nums/length fullname': sum(1 for c in full_name if c.isdigit()) / fullname_len,
+            'name==username': int(full_name.lower() == username.lower()) if username and full_name else 0,
+            'description length': len(biography),
+            'external URL': 1 if external_url else 0,
+            'private': int(is_private),
+            '#posts': posts,
+            '#followers': followers,
+            '#follows': follows
         }
 
-        # Prediction
         df = pd.DataFrame([features])
         prediction = model.predict(df)[0]
-        result = 'Fake Account' if prediction == 1 else 'Real Account'
+        result = 'Fake Account' if int(prediction) == 1 else 'Real Account'
 
-        # Profile picture as base64
-        img_base64 = None
-        try:
-            response = requests.get(profile.profile_pic_url)
-            img_base64 = base64.b64encode(response.content).decode('utf-8')
-            img_base64 = f"data:image/jpeg;base64,{img_base64}"
-        except Exception:
-            pass
-
-        # Profile data
-        profile_data = {
-            'username': profile.username,
-            'full_name': profile.full_name,
-            'biography': profile.biography,
-            'external_url': profile.external_url,
-            'is_private': profile.is_private,
-            'is_verified': profile.is_verified,
-            'profile_pic_url': img_base64,
-            '#posts': profile.mediacount,
-            '#followers': profile.followers,
-            '#follows': profile.followees
-        }
-
-        return jsonify({'result': result, 'profile': profile_data})
+        return jsonify({
+            'result': result,
+            'username': username,
+            'full_name': full_name,
+            'followers': followers,
+            'follows': follows,
+            'posts': posts
+        })
 
     except Exception as e:
-        return jsonify({'error': str(e)})
-
-# ✅ Serve frontend for testing (optional for local)
-@app.route('/')
-def home():
-    frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend')
-    return send_from_directory(frontend_path, 'index.html')
+        return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
 
 
-# ❌ Don’t use app.run() — Vercel handles that automatically.
 if __name__ == '__main__':
     app.run(debug=True)
