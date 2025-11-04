@@ -1,51 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
+  <title>InstaScan - Manual Instagram Fake Account Detector</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InstaScan - Manual Entry</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7f9fc;
       margin: 0;
-      padding: 40px;
+      padding: 0;
     }
+
     .container {
       max-width: 600px;
-      margin: auto;
+      margin: 50px auto;
       background: #fff;
-      padding: 30px;
+      padding: 25px 30px;
       border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-    input, textarea {
-      width: 100%;
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input,
+    textarea {
       padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
+      font-size: 15px;
       border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
     }
+
+    label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .checkboxes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
     button {
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 12px 18px;
+      padding: 10px;
       border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
+
     button:hover {
       background-color: #0056b3;
     }
-    .result {
+
+    #profilePreview {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    #profilePreview img {
+      max-width: 120px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    #result {
       margin-top: 20px;
+      text-align: center;
+      font-size: 1.2em;
       font-weight: bold;
+    }
+
+    .real {
+      color: green;
+    }
+
+    .fake {
+      color: red;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h2>Manual Instagram Profile Entry</h2>
+    <h2>InstaScan - Manual Entry</h2>
 
     <form id="manualForm">
       <label>Username:</label>
@@ -55,72 +110,80 @@
       <input type="text" name="full_name" required>
 
       <label>Biography:</label>
-      <textarea name="biography"></textarea>
+      <textarea name="biography" rows="2" placeholder="Short bio..."></textarea>
 
       <label>External URL:</label>
-      <input type="text" name="external_url">
+      <input type="text" name="external_url" placeholder="https://example.com">
 
       <label>Profile Picture URL:</label>
-      <input type="text" name="profile_pic_url">
+      <input type="text" name="profile_pic_url" id="profilePicInput" placeholder="Paste image URL">
+      <div id="profilePreview">
+        <img id="profileImg" src="" alt="Profile Picture Preview">
+      </div>
 
-      <label>Private Account:</label>
-      <input type="checkbox" name="is_private">
+      <div class="checkboxes">
+        <label><input type="checkbox" name="is_private"> Private</label>
+        <label><input type="checkbox" name="is_verified"> Verified</label>
+      </div>
 
-      <label>Verified Account:</label>
-      <input type="checkbox" name="is_verified">
+      <label>Number of Posts:</label>
+      <input type="number" name="posts" required>
 
-      <label>Posts:</label>
-      <input type="number" name="posts" min="0">
+      <label>Number of Followers:</label>
+      <input type="number" name="followers" required>
 
-      <label>Followers:</label>
-      <input type="number" name="followers" min="0">
-
-      <label>Follows:</label>
-      <input type="number" name="follows" min="0">
+      <label>Number of Following:</label>
+      <input type="number" name="follows" required>
 
       <button type="submit">Predict</button>
     </form>
 
-    <div class="result" id="result"></div>
+    <div id="result"></div>
   </div>
 
   <script>
-    document.getElementById('manualForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Preview profile picture if a URL is entered
+    const profileInput = document.getElementById("profilePicInput");
+    const previewDiv = document.getElementById("profilePreview");
+    const previewImg = document.getElementById("profileImg");
 
-      const formData = new FormData(e.target);
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerText = "Predicting...";
+    profileInput.addEventListener("input", () => {
+      const url = profileInput.value.trim();
+      if (url) {
+        previewImg.src = url;
+        previewDiv.style.display = "block";
+      } else {
+        previewDiv.style.display = "none";
+      }
+    });
+
+    // Handle form submission
+    document.getElementById("manualForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
 
       try {
+
         const response = await fetch("/api/predict_manual", {
           method: "POST",
-          body: formData
+          body: formData,
         });
 
-        const text = await response.text(); // read response as text first
 
-        let data;
-        try {
-          data = JSON.parse(text); // try parsing JSON
-        } catch {
-          throw new Error("Server did not return valid JSON. Response:\n" + text);
-        }
+        const data = await response.json();
+        const resultDiv = document.getElementById("result");
 
-        if (data.error) {
-          resultDiv.innerText = "❌ Error: " + data.error;
+        if (data.result) {
+          const cls = data.result === "Fake Account" ? "fake" : "real";
+          resultDiv.innerHTML = `Prediction: <span class="${cls}">${data.result}</span>`;
         } else {
-          resultDiv.innerHTML = `
-            ✅ <strong>${data.result}</strong><br>
-            👤 Username: ${data.username}<br>
-            🧾 Full Name: ${data.full_name}<br>
-            📊 Followers: ${data.followers}, Follows: ${data.follows}, Posts: ${data.posts}
-          `;
+          resultDiv.textContent = data.error || "Prediction failed.";
         }
       } catch (err) {
-        resultDiv.innerText = "⚠️ Server error: " + err.message;
+        document.getElementById("result").textContent = "Server error: " + err.message;
       }
     });
   </script>
 </body>
+
 </html>
