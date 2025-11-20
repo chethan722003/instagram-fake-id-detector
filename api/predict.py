@@ -2,32 +2,42 @@ import os
 import pandas as pd
 import base64
 import requests
-from flask import Flask, request, jsonify, send_from_directory
 import instaloader
 from urllib.parse import urlparse
 import joblib
+import json
 
-app = Flask(__name__)
-
-# Model path (compatible with Vercel and local)
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'model', 'rf_model.pkl')
+# Load model
+MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'model', 'rf_model.pkl')
 model = joblib.load(MODEL_PATH)
 
 def extract_username(url):
-    """Extract the Instagram username from a profile URL."""
     return urlparse(url).path.strip('/').split('/')[0]
 
-@app.route('/api/predict', methods=['POST'])
-def predict():
+def handler(request):
+    """This function replaces Flask for Vercel."""
+    if request.method != "POST":
+        return {
+            "statusCode": 405,
+            "body": json.dumps({"error": "Only POST allowed"})
+        }
+
     try:
-        data = request.json
-        url = data.get('url')
+        body = json.loads(request.body.decode())
+        url = body.get("url")
+
         if not url:
-            return jsonify({'error': 'No URL provided'}), 400
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "No URL provided"})
+            }
 
         username = extract_username(url)
         if not username:
-            return jsonify({'error': 'Invalid Instagram URL'}), 400
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "Invalid Instagram URL"})
+            }
 
         # Load profile
         L = instaloader.Instaloader()
@@ -48,46 +58,43 @@ def predict():
             '#follows': profile.followees
         }
 
-        # Prediction
         df = pd.DataFrame([features])
         prediction = model.predict(df)[0]
-        result = 'Fake Account' if prediction == 1 else 'Real Account'
+        result = "Fake Account" if prediction == 1 else "Real Account"
 
-        # Profile picture as base64
+        # Profile picture base64
         img_base64 = None
         try:
-            response = requests.get(profile.profile_pic_url)
-            img_base64 = base64.b64encode(response.content).decode('utf-8')
+            resp = requests.get(profile.profile_pic_url)
+            img_base64 = base64.b64encode(resp.content).decode("utf-8")
             img_base64 = f"data:image/jpeg;base64,{img_base64}"
-        except Exception:
+        except:
             pass
 
-        # Profile data
         profile_data = {
-            'username': profile.username,
-            'full_name': profile.full_name,
-            'biography': profile.biography,
-            'external_url': profile.external_url,
-            'is_private': profile.is_private,
-            'is_verified': profile.is_verified,
-            'profile_pic_url': img_base64,
-            '#posts': profile.mediacount,
-            '#followers': profile.followers,
-            '#follows': profile.followees
+            "username": profile.username,
+            "full_name": profile.full_name,
+            "biography": profile.biography,
+            "external_url": profile.external_url,
+            "is_private": profile.is_private,
+            "is_verified": profile.is_verified,
+            "profile_pic_url": img_base64,
+            "#posts": profile.mediacount,
+            "#followers": profile.followers,
+            "#follows": profile.followees
         }
 
-        return jsonify({'result': result, 'profile': profile_data})
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "result": result,
+                "profile": profile_data
+            }),
+            "headers": {"Content-Type": "application/json"}
+        }
 
     except Exception as e:
-        return jsonify({'error': str(e)})
-
-# ✅ Serve frontend for testing (optional for local)
-@app.route('/')
-def home():
-    frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend')
-    return send_from_directory(frontend_path, 'index.html')
-
-
-# ❌ Don’t use app.run() — Vercel handles that automatically.
-if __name__ == '__main__':
-    app.run(debug=True)
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
